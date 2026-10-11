@@ -1,0 +1,27 @@
+name: build-debugger-fw
+on:
+  push:
+    branches: [f22-debugger-fw]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: install SAMD core
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install arduino:samd
+      - name: compile
+        run: arduino-cli compile --fqbn arduino:samd:adafruit_circuitplayground_m0 --output-dir out debugger_fw/serial_remote_f22
+      - name: convert to UF2
+        run: |
+          curl -sSfLO https://raw.githubusercontent.com/microsoft/uf2/master/utils/uf2conv.py
+          curl -sSfLO https://raw.githubusercontent.com/microsoft/uf2/master/utils/uf2families.json
+          python3 uf2conv.py -c -b 0x2000 -f SAMD21 -o out/serial_remote_f22.uf2 out/serial_remote_f22.ino.bin
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: serial_remote_f22
+          path: out/
