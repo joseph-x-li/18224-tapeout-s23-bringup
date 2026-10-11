@@ -15,6 +15,7 @@ geometry: margin=3cm
 - F22 designs (TinyTapeout-style designs)
 	- CLK is on IN[0] instead of CLK pin
 	- Must still step the CLK pin to set the design
+	- From Python, set the other inputs first, then raise IN[0] in a separate call (e.g. `set_all_inputs(v & ~1)` then `set_all_inputs(v | 1)`). This needs the current `serial_remote` firmware: older builds reset every input to 0 on each command, so an IN[0] edge always saw the other inputs as 0
 
 ## Kit Contents
 

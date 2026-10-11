@@ -21,6 +21,7 @@ void setup() {
                 // Delayed init to give the user a chance to unplug
                 // any extra circuits before starting the script
                 init_portio();
+                initialized = true;
             }
 
             uint8_t hi  = read_blocking();
@@ -30,9 +31,12 @@ void setup() {
             if (chk != (((hi+lo) ^ 0xAB) & 0xFF)) continue;
             if (hi & 0x80 != 0x80) continue;
 
-            set_inputs(lo, 7, 0);
+            // IN[0] is written last so that designs clocked from IN[0]
+            // (the F22 designs) see the new values of IN[11:1] on its edge
             set_inputs(hi & 0x0F, 11, 8);
+            set_inputs(lo >> 1, 7, 1);
             set_reset((hi >> 4) & 0x1);
+            set_input(0, lo & 0x1);
 
             if ((hi >> 5) & 0x1) { // step the clock
                 step_clock();
